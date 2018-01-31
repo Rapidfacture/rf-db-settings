@@ -49,18 +49,23 @@ module.exports.start = function (options, callback) {
             query: 'mail'
          },
       ];
+      
+      // how can this parameter be passed back?
+      var config = {};
 
       var counter = 0;
 
-      getSettings()
-
-      function getSettings(name, query, callback){
-         getGlobalSettings(query, function setGlobalSettings (settings) {
+      function getNextSetting(){
+         var name = settings[counter];
+         var query = settings[counter];
+         getGlobalSettings(query, function setGlobalSettings (setting) {
             counter++;
-            config.[name] = settings;
-            callback();
+            config.[name] = setting;
+            if (counter < settings.length) getNextSetting();
          });
       }
+      
+      getNextSetting()
 
 
       // Load settings
@@ -71,7 +76,10 @@ module.exports.start = function (options, callback) {
             callback(db);
          });
       });
+      
    });
+   
+   return db;
 };
 
 
