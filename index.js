@@ -27,9 +27,7 @@ module.exports = function (options, callback) {
       log.critical('no db access, options.db is ', options.db);
    }
    var db = options.db;
-   var settingsToFetch = options.settings;
-   var mergeObj = options.mergeDbSettingsInto;
-   // should be something like:
+   var settingsToFetch = options.settings; // something like:
    // [
    //    {
    //       name: 'globalSettings',
@@ -43,7 +41,15 @@ module.exports = function (options, callback) {
    //       name: 'mailSettings',
    //       query: 'mail'
    //    }
-   // ];
+   // ]
+   var mergeObj = options.mergeDbSettingsInto;
+   if (mergeObj) { // merge without conflict?
+      settingsToFetch.forEach(function (setting) {
+         if (mergeObj[setting.name]) {
+            log.critical('You try to overwrite mergeDbSettingsInto.' + setting.name + ' aborting. Please Choose antoher "name" in "settings" in rf-db-settings option ');
+         }
+      });
+   }
    var dBsettings = {}; // settings to fetch from db
 
 
@@ -52,19 +58,26 @@ module.exports = function (options, callback) {
    fetchNextSetting();
    var counter = 0;
    function fetchNextSetting () {
-      var name = settingsToFetch[counter];
-      var query = settingsToFetch[counter];
-      getGlobalSettings(query, function (dbSetting) {
+      var settingFetch = settingsToFetch[counter];
+
+      if (!settingFetch.name) {
+         log.critical('"name" not found in passed "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
+      }
+
+      if (!settingFetch.query) {
+         log.critical('"query" not found in passed "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
+      }
+
+      getGlobalSettings(settingFetch.query, function (dbSetting) {
          counter++;
-         dBsettings[name] = dbSetting;
+         dBsettings[settingFetch.name] = dbSetting;
          if (counter < settingsToFetch.length) fetchNextSetting();
       });
    }
-
-   function getGlobalSettings (name, callback) {
+   function getGlobalSettings (queryName, callback) {
       db.global.settings
          .findOne({
-            'name': name
+            'name': queryName
          })
          .exec(function (err, doc) {
             if (doc && doc.settings) {
@@ -72,7 +85,7 @@ module.exports = function (options, callback) {
             } else if (err) {
                log.critical(err);
             } else {
-               log.critical('no ' + name + ' settings found in DB global');
+               log.critical('no ' + queryName + ' settings found in DB global');
             }
          });
    }
