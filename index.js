@@ -1,6 +1,6 @@
 // rf-db
 
-var mongooseMulti = require('mongoose-multi');
+var merge = require('lodash.merge');
 
 // logging
 var log = {
@@ -11,76 +11,78 @@ var log = {
    }
 };
 try { // try using rf-log
-   log = require(require.resolve('rf-log')).customPrefixLogger('[rf-db]');
+   log = require(require.resolve('rf-log')).customPrefixLogger('[rf-db-settings]');
 } catch (e) {}
 
 
 
-module.exports.start = function (options, callback) {
+module.exports = function (options, callback) {
+
+   // housekeeping
+   if (!options.settings || (options.settings.length && options.settings.length < 1)) {
+      log.info('no settings specified in "options.settings", aborting.');
+      return;
+   }
    if (!options.db) {
-      log.critical('no db configuration specified ', options.db);
+      log.critical('no db access, options.db is ', options.db);
    }
-   if (!options.pathsSchemas) {
-      log.critical('no db schemas specified ', options.pathsSchemas);
+   var db = options.db;
+   var settingsToFetch = options.settings;
+   var mergeObj = options.mergeDbSettingsInto;
+   // should be something like:
+   // [
+   //    {
+   //       name: 'globalSettings',
+   //       query: 'global'
+   //    },
+   //    {
+   //       name: 'appSettings',
+   //       query: config.app.name
+   //    },
+   //    {
+   //       name: 'mailSettings',
+   //       query: 'mail'
+   //    }
+   // ];
+   var dBsettings = {}; // settings to fetch from db
+
+
+
+   // iterate throught settingsToFetch
+   fetchNextSetting();
+   var counter = 0;
+   function fetchNextSetting () {
+      var name = settingsToFetch[counter];
+      var query = settingsToFetch[counter];
+      getGlobalSettings(query, function (dbSetting) {
+         counter++;
+         dBsettings[name] = dbSetting;
+         if (counter < settingsToFetch.length) fetchNextSetting();
+      });
    }
 
-   var db = mongooseMulti.start(options.db, options.pathsSchemas);
-
-
-   db.global.mongooseConnection.once('open', function () {
-
-      if (options.settings) {
-         // var settings = [
-         //    {
-         //       name: 'globalSettings',
-         //       query: 'global'
-         //    },
-         //    {
-         //       name: 'appSettings',
-         //       query: config.app.name
-         //    },
-         //    {
-         //       name: 'mailSettings',
-         //       query: 'mail'
-         //    }
-         // ];
-         var settings = options.settings;
-         getNextSetting();
-      }
-
-      // how can this parameter be passed back?
-      var config = {};
-
-      var counter = 0;
-      function getNextSetting () {
-         var name = settings[counter];
-         var query = settings[counter];
-         getGlobalSettings(query, function (setting) {
-            counter++;
-            config[name] = setting;
-            if (counter < settings.length) getNextSetting();
+   function getGlobalSettings (name, callback) {
+      db.global.settings
+         .findOne({
+            'name': name
+         })
+         .exec(function (err, doc) {
+            if (doc && doc.settings) {
+               callback(doc.settings);
+            } else if (err) {
+               log.critical(err);
+            } else {
+               log.critical('no ' + name + ' settings found in DB global');
+            }
          });
-      }
+   }
 
 
-      function getGlobalSettings (name, callback) {
-         db.global.settings
-            .findOne({
-               'name': name
-            })
-            .exec(function (err, doc) {
-               if (doc && doc.settings) {
-                  callback(doc.settings);
-               } else if (err) {
-                  log.critical(err);
-               } else {
-                  log.critical('no ' + name + ' settings found in DB global');
-               }
-            });
-      }
+   // optional: merge dbSettings into passed object
+   if (mergeObj) {
+      mergeObj = merge(mergeObj, dBsettings);
+   }
 
 
-   return db;
+   callback(dBsettings);
 };
-
-}
