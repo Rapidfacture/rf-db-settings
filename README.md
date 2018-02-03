@@ -1,23 +1,38 @@
 # rf-db
-Rapifacture database module. Provides mongoose, Gridfs and Db settings
 
-* tries to use 'rf-log'
+Get Settings from Rapifacture database module with error handling. Try to use 'rf-log'
+
+## installation
+
+> npm install rf-db-settings
+
+```javascript
+var getDbSettings = require('rf-db-settings');
 
 
-##
+getDbSettings({
+   settings: [
+      {
+         name: 'globalSettings',
+         query: 'global'
+      },
+      {
+         name: 'appSettings',
+         query: config.app.name
+      },
+      {
+         name: 'mailSettings',
+         query: 'mail'
+      }
+   ]
+   mergeDbSettingsInto: config
 
->npm install rf-db
-
-```js
-var db = require('rf-db').start({
-   db: db,
-   pathsSchemas: 'dest',
-   settings: {
-
-   }
+}, function(settings){ // callback after fetch
+   // settings looks like:
+   // {
+   //    globalSettings: Object,
+   //    appSettings: Object,
+   //    mailSettings: Object
+   // }
 });
-
-// the webserver is running on port 3000 using folder 'dest' as root
-// user express 'app' for further things like
-// adding middleware, websockets, etc.
 ```
