@@ -85,7 +85,7 @@ module.exports = function (options, callback) {
          })
          .exec(function (err, doc) {
             if (doc && doc.settings) {
-               log.success('fetched "' + queryName + '" settings from db.global.settings }');
+               log.success('got "' + queryName + '" settings from db.global.settings');
                callback(doc.settings);
             } else if (err) {
                log.critical(err);
