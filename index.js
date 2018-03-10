@@ -53,9 +53,7 @@ module.exports = function (options, callback) {
    var dBsettings = {}; // settings to fetch from db
 
 
-
    // iterate throught settingsToFetch
-   fetchNextSetting();
    var counter = 0;
    function fetchNextSetting () {
       var settingFetch = settingsToFetch[counter];
@@ -90,6 +88,8 @@ module.exports = function (options, callback) {
          });
    }
 
+   // init
+   fetchNextSetting();
 
    // optional: merge dbSettings into passed object
    if (mergeObj) {
