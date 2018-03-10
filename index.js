@@ -67,9 +67,15 @@ module.exports = function (options, callback) {
       }
 
       getGlobalSettings(settingFetch.query, function (dbSetting) {
-         counter++;
          dBsettings[settingFetch.name] = dbSetting;
+
+         counter++;
+
          if (counter < settingsToFetch.length) fetchNextSetting();
+
+         if (counter === settingsToFetch.length) { // jump out of the loop
+            finish();
+         }
       });
    }
    function getGlobalSettings (queryName, callback) {
@@ -78,6 +84,8 @@ module.exports = function (options, callback) {
             'name': queryName
          })
          .exec(function (err, doc) {
+            log.info(queryName);
+
             if (doc && doc.settings) {
                callback(doc.settings);
             } else if (err) {
@@ -91,11 +99,14 @@ module.exports = function (options, callback) {
    // init
    fetchNextSetting();
 
-   // optional: merge dbSettings into passed object
-   if (mergeObj) {
-      mergeObj = merge(mergeObj, dBsettings);
+
+   function finish () {
+      // optional: merge dbSettings into passed object
+      if (mergeObj) {
+         mergeObj = merge(mergeObj, dBsettings);
+      }
+
+      if (callback) callback(dBsettings);
    }
 
-
-   callback(dBsettings);
 };
