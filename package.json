@@ -1,13 +1,13 @@
 {
-   "name": "rf-db-settings",
-   "version": "0.0.1",
-   "description": "Rapifacture database module. Provides mongoose, Gridfs and Db settings.",
-   "author": "Rapidfacture GmbH",
-   "license": "UNLICENSED",
-   "private": true,
-   "main": "server.js",
-   "dependencies": {
-      "lodash.merge": "4.6.0"
-   },
-   "devDependencies": {}
+  "name": "rf-db-settings",
+  "version": "0.0.2",
+  "description": "Rapifacture database module. Provides mongoose, Gridfs and Db settings.",
+  "author": "Rapidfacture GmbH",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "server.js",
+  "dependencies": {
+    "lodash.merge": "4.6.0"
+  },
+  "devDependencies": {}
 }
