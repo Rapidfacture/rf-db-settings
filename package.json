@@ -1,6 +1,6 @@
 {
   "name": "rf-db-settings",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Rapifacture database module. Provides mongoose, Gridfs and Db settings.",
   "author": "Rapidfacture GmbH",
   "license": "UNLICENSED",
