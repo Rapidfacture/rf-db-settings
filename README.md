@@ -25,7 +25,7 @@ getDbSettings({
          query: 'mail'
       }
    ]
-   mergeDbSettingsInto: config
+   mergeDbSettingsInto: config // optional
 
 }, function(settings){ // callback after fetch
    // settings looks like:
