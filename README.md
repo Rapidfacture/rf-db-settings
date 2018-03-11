@@ -17,6 +17,11 @@ getDbSettings({
          query: 'global'
       },
       {
+         name: 'sessionSecret',
+         query: 'sessionSecret',
+         optional: true // this will throw a warning, but no error
+      },
+      {
          name: 'appSettings',
          query: config.app.name
       },

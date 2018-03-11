@@ -26,6 +26,12 @@ module.exports = function (options, callback) {
    if (!options.db) {
       log.critical('no db access, options.db is ', options.db);
    }
+
+   if (!options.callback) {
+      log.critical('no callback was defined (second parameter), aborting...');
+   }
+
+
    var db = options.db;
    var settingsToFetch = options.settings; // something like:
    // [
@@ -50,7 +56,10 @@ module.exports = function (options, callback) {
          }
       });
    }
+
+
    var dBsettings = {}; // settings to fetch from db
+
 
 
    // iterate throught settingsToFetch
@@ -59,41 +68,41 @@ module.exports = function (options, callback) {
       var settingFetch = settingsToFetch[counter];
 
       if (!settingFetch.name) {
-         log.critical('"name" not found in passed "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
+         log.critical('no "name" found in "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
       }
 
       if (!settingFetch.query) {
-         log.critical('"query" not found in passed "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
+         log.critical('no "query" found in "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
       }
 
-      getGlobalSettings(settingFetch.query, function (dbSetting) {
-         dBsettings[settingFetch.name] = dbSetting;
-
-         counter++;
-
-         if (counter < settingsToFetch.length) fetchNextSetting();
-
-         if (counter === settingsToFetch.length) { // jump out of the loop
-            finish();
-         }
-      });
-   }
-   function getGlobalSettings (queryName, callback) {
       db.global.settings
          .findOne({
-            'name': queryName
+            'name': settingFetch.query
          })
          .exec(function (err, doc) {
-            if (doc && doc.settings) {
-               log.success('got "' + queryName + '" settings from db.global.settings');
-               callback(doc.settings);
-            } else if (err) {
+            if (err) {
                log.critical(err);
+            } else if (doc && doc.settings) {
+               log.success('got "' + settingFetch.query + '" settings from db.global.settings');
+               dBsettings[settingFetch.name] = doc.settings;
+            } else if (settingFetch.optional) {
+               log.info('could not fetch "' + settingFetch.query + '" settings from db.global.settings, but was optional');
+               dBsettings[settingFetch.name] = null;
             } else {
-               log.critical('no ' + queryName + ' settings found in DB global');
+               log.critical('no ' + settingFetch.query + ' settings found in DB global');
             }
+
+            counter++;
+
+            if (counter < settingsToFetch.length) fetchNextSetting();
+
+            if (counter === settingsToFetch.length) { // jump out of the loop
+               finish();
+            }
+
          });
    }
+
 
    // init
    fetchNextSetting();
@@ -105,7 +114,7 @@ module.exports = function (options, callback) {
          mergeObj = merge(mergeObj, dBsettings);
       }
 
-      if (callback) callback(dBsettings);
+      callback(dBsettings);
    }
 
 };
