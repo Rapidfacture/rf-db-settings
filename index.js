@@ -27,7 +27,7 @@ module.exports = function (options, callback) {
       log.critical('no db access, options.db is ', options.db);
    }
 
-   if (!options.callback) {
+   if (!callback) {
       log.critical('no callback was defined (second parameter), aborting...');
    }
 
