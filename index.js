@@ -81,11 +81,7 @@ module.exports = function (options, callback) {
          })
          .exec(function (err, doc) {
             if (err) {
-               log.error(err);
-               // restart after some time, as this is critical
-               setTimeout(function () {
-                  log.critical(err);
-               }, 25000);
+               log.critical(err);
             } else if (doc && doc.settings) {
                log.success('got "' + settingFetch.query + '" settings from db.global.settings');
                dBsettings[settingFetch.name] = doc.settings;
@@ -93,7 +89,12 @@ module.exports = function (options, callback) {
                log.info('could not fetch "' + settingFetch.query + '" settings from db.global.settings, but was optional');
                dBsettings[settingFetch.name] = null;
             } else {
-               log.critical('no ' + settingFetch.query + ' settings found in DB global');
+               // restart after some time, as this is critical
+               var notFound = 'no ' + settingFetch.query + ' settings found in DB global';
+               log.error(notFound);
+               setTimeout(function () {
+                  log.critical(notFound);
+               }, 25000);
             }
 
             counter++;
