@@ -81,7 +81,11 @@ module.exports = function (options, callback) {
          })
          .exec(function (err, doc) {
             if (err) {
-               log.critical(err);
+               log.error(err);
+               // restart after some time, as this is critical
+               setTimeout(function () {
+                  log.critical(err);
+               }, 25000);
             } else if (doc && doc.settings) {
                log.success('got "' + settingFetch.query + '" settings from db.global.settings');
                dBsettings[settingFetch.name] = doc.settings;
