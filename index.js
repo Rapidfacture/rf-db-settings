@@ -65,6 +65,7 @@ module.exports = function (options, callback) {
    // iterate throught settingsToFetch
    var counter = 0;
    function fetchNextSetting () {
+      var settingsInfo = '';
       var settingFetch = settingsToFetch[counter];
 
       if (!settingFetch.name) {
@@ -83,7 +84,7 @@ module.exports = function (options, callback) {
             if (err) {
                log.critical(err);
             } else if (doc && doc.settings) {
-               log.success('got "' + settingFetch.query + '" settings from db.global.settings');
+               settingsInfo += settingFetch.name + ', ';
                dBsettings[settingFetch.name] = doc.settings;
             } else if (settingFetch.optional) {
                log.info('could not fetch "' + settingFetch.query + '" settings from db.global.settings, but was optional');
@@ -102,7 +103,7 @@ module.exports = function (options, callback) {
             if (counter < settingsToFetch.length) fetchNextSetting();
 
             if (counter === settingsToFetch.length) { // jump out of the loop
-               finish();
+               finish(settingsInfo);
             }
 
          });
@@ -113,11 +114,13 @@ module.exports = function (options, callback) {
    fetchNextSetting();
 
 
-   function finish () {
+   function finish (settingsInfo) {
       // optional: merge dbSettings into passed object
       if (mergeObj) {
          mergeObj = merge(mergeObj, dBsettings);
       }
+
+      if (settingsInfo) log.success('got settings"' + settingsInfo + '"from db.global.settings');
 
       callback(dBsettings);
    }
