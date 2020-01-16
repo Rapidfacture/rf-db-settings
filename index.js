@@ -64,8 +64,8 @@ module.exports = function (options, callback) {
 
    // iterate throught settingsToFetch
    var counter = 0;
+   var settingsInfo = '';
    function fetchNextSetting () {
-      var settingsInfo = '';
       var settingFetch = settingsToFetch[counter];
 
       if (!settingFetch.name) {
@@ -120,7 +120,10 @@ module.exports = function (options, callback) {
          mergeObj = merge(mergeObj, dBsettings);
       }
 
-      if (settingsInfo) log.success('got settings"' + settingsInfo + '"from db.global.settings');
+      if (settingsInfo) {
+         log.success('got settings ' + settingsInfo);
+         settingsInfo = '';
+      }
 
       callback(dBsettings);
    }
