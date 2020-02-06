@@ -81,6 +81,8 @@ module.exports = function (options, callback) {
             'name': settingFetch.query
          })
          .exec(function (err, doc) {
+
+            // error handling
             if (err) {
                log.critical(err);
             } else if (doc && doc.settings) {
@@ -98,12 +100,17 @@ module.exports = function (options, callback) {
                }, 25000);
             }
 
-            counter++;
 
+            // next setting
+            counter++;
             if (counter < settingsToFetch.length) fetchNextSetting();
 
+
+            // finish
             if (counter === settingsToFetch.length) { // jump out of the loop
-               finish(settingsInfo);
+               // optional: merge dbSettings into passed object
+               if (mergeObj) mergeObj = merge(mergeObj, dBsettings);
+               callback(dBsettings, settingsInfo);
             }
 
          });
@@ -113,19 +120,5 @@ module.exports = function (options, callback) {
    // init
    fetchNextSetting();
 
-
-   function finish (settingsInfo) {
-      // optional: merge dbSettings into passed object
-      if (mergeObj) {
-         mergeObj = merge(mergeObj, dBsettings);
-      }
-
-      if (settingsInfo) {
-         log.success('got settings ' + settingsInfo);
-         settingsInfo = '';
-      }
-
-      callback(dBsettings);
-   }
 
 };
