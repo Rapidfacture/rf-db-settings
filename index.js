@@ -33,6 +33,8 @@ module.exports = function (options, callback) {
 
 
    var db = options.db;
+   var dbName = options.dbName || 'global';
+
    var settingsToFetch = options.settings; // something like:
    // [
    //    {
@@ -76,7 +78,7 @@ module.exports = function (options, callback) {
          log.critical('no "query" found in "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
       }
 
-      db.global.settings
+      db[dbName].settings
          .findOne({
             'name': settingFetch.query
          })
