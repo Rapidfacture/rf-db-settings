@@ -98,7 +98,7 @@ module.exports = function (options, callback) {
                var notFound = 'no ' + settingFetch.query + ' settings found in DB global';
                log.error(notFound);
                setTimeout(function () {
-                  log.critical(notFound);
+                  log.error(notFound);
                }, 25000);
             }
 
