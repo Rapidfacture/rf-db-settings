@@ -78,10 +78,12 @@ module.exports = function (options, callback) {
          log.critical('no "query" found in "settings[" ' + counter + ']. settings looks like:', settingsToFetch);
       }
 
+      let queryObject = {
+         name: settingFetch.query
+      };
+
       db[dbName].settings
-         .findOne({
-            'name': settingFetch.query
-         })
+         .findOne(queryObject)
          .exec(function (err, doc) {
 
             // error handling
@@ -97,9 +99,23 @@ module.exports = function (options, callback) {
                // restart after some time, as this is critical
                var notFound = 'no ' + settingFetch.query + ' settings found in DB global';
                log.error(notFound);
-               setTimeout(function () {
-                  log.error(notFound);
-               }, 25000);
+
+               let emptyDoc = {
+                  name: settingFetch.query,
+                  settings: {}
+               };
+
+               db[dbName].settings.findOneAndUpdate(
+                  queryObject, // search condition
+                  emptyDoc,
+                  { upsert: true, new: true, useFindAndModify: false },
+                  function (err, doc) {
+                     if (err) {
+                        log.error(err);
+                     }else{
+                        log.success('created ' + settingFetch.query + ' settings in DB global');
+                     }
+                  });
             }
 
 
